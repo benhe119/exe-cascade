@@ -18,10 +18,8 @@ var executables []exepack
 var wg sync.WaitGroup
 
 func main() {
-	runCascade()
-}
+	//This comment will be replaced
 
-func runCascade() {
 	for _, exe := range executables {
 		go runExepack(exe, "")
 		wg.Add(1)
