@@ -1,3 +1,3 @@
 #!/bin/bash
-go build -i cascade/*.go -o cascade/build/launcher_builder
+go build -o cascade/build/launcher_builder -i cascade/*.go
 cascade/build/launcher_builder
