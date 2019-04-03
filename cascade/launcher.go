@@ -6,3 +6,7 @@ type exepack struct {
 	encrypted  bool
 	compressed bool
 }
+
+func main() {
+
+}
