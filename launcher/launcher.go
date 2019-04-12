@@ -20,8 +20,7 @@ var iscompressed bool
 var encryptionkey []byte
 
 func main() {
-	//This comment will be replaced
-
+	loadDynamic()
 	for _, exe := range executables {
 		go runExepack(exe, "")
 		wg.Add(1)

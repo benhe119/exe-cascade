@@ -1,0 +1,7 @@
+package main
+
+func loadDynamic() {
+	//COMPRESSION_PLACEHOLDER
+	//ENCRYPTION_PLACEHOLDER
+	//BINARY_PLACEHOLDER
+}
