@@ -12,15 +12,14 @@ import (
 	"github.com/Craumix/mwutil"
 )
 
+var defaultkey []byte
+
 func main() {
+	defaultkey := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
 	os.Mkdir("in", 0777)
 	os.Mkdir("tmp", 0777)
 	os.Mkdir("out", 0777)
-
-	compress := readBool("Compress?")
-	encrypt := readBool("Encrypt?")
-	_ = encrypt
-	_ = compress
 
 	fmt.Println("Please enter the name of the main file!")
 	mainfile := readString(":")
@@ -31,16 +30,34 @@ func main() {
 
 	otherfiles = append(otherfiles, mainfile)
 
+	fmt.Println("Starting...")
+
 	copy("launcher/launcher.go", "tmp/launcher.go")
 	//copy("launcher/dynamic.go", "tmp/dynamic.go")
-	dynfile, err := string(ioutil.ReadFile("launcher/dynamic.go"))
-	mwutil.Logif(err)
-	dynfile = strings.ReplaceAll(dynfile, "//COMPRESSION_PLACEHOLDER", "iscompressed="+strconv.FormatBool(compress))
-	if encrypt {
-		key, _ := mwutil.GenKey()
-		dynfile = strings.ReplaceAll(dynfile, "//COMPRESSION_PLACEHOLDER", "encryptionkey="+byteToString(key))
 
+	addFile(mainfile)
+	for _, filename := range otherfiles {
+		addFile(mainfile)
 	}
+}
+
+func addFile(path string) {
+	fmt.Println("[" + path + "]")
+	data, err := ioutil.ReadFile(path)
+	mwutil.Logif(err)
+	fmt.Print("Compressing... ")
+	startsize := len(data)
+	data, err = mwutil.Gzipdata(data)
+	mwutil.Logif(err)
+	fmt.Println("Done!")
+
+	percent := len(data) / startsize * 100
+	fmt.Println(strconv.Itoa(startsize) + " -> " + strconv.Itoa(len(data)) + " [" + strconv.Itoa(percent) + "%]")
+
+	fmt.Print("Encrypting... ")
+	data, err = mwutil.AesEncrypt(defaultkey, data)
+	mwutil.Logif(err)
+	fmt.Println("Done!")
 }
 
 func byteToString(data []byte) string {

